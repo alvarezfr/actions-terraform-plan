@@ -1,0 +1,54 @@
+name: 'Terraform CI'
+description: 'Validate and runs a terraform plan'
+inputs:
+  terraform_version:
+    description: 'Terraform version to use'
+    required: false
+    default: '0.14.x'
+  # Currently is not allowed to use conditional inside composite actions. https://github.com/actions/runner/issues/834
+  # write_plan_as_comment:
+  #   description: 'enable to write the tfplan to the pr comment'
+  #   required: false
+  #   default: true
+runs:
+  using: composite
+  steps:
+    - uses: hashicorp/setup-terraform@v1
+      with:
+        terraform_version: ${{ inputs.terraform_version }}
+        terraform_wrapper: true
+    - name: terraform init
+      shell: bash
+      run: |
+        terraform init -input=false \
+          -backend-config=container_name=$TERRAFORM_BACKEND_TFSTATE_CONTAINER_NAME \
+          -backend-config=key=$TERRAFORM_BACKEND_TFSTATE_NAME \
+          -backend-config=storage_account_name=$TERRAFORM_BACKEND_TFSTATE_STA_NAME \
+          -backend-config=resource_group_name=$TERRAFORM_BACKEND_TFSTATE_RG_NAME
+    - name: terraform plan
+      shell: bash
+      run: |
+        terraform plan -input=false -out tfplan
+    - name: capture terraform plan
+      id: tfplan_plain
+      shell: bash
+      run: |
+        # Adds the plan in plain text to a env var called TFPLAN. Used to write the comment in the PR
+        terraform show -no-color tfplan
+    - uses: actions/github-script@v5
+      name: Add plan to PR comment
+      # if: ${{ inputs.write_plan_as_comment }}
+      # Currently is not allowed to use conditional inside composite actions. https://github.com/actions/runner/issues/834
+      env:
+        PR_COMMENT_BODY: |
+          ```hcl
+          ${{ steps.tfplan_plain.outputs.stdout }}
+          ```
+      with:
+        script: |
+          github.rest.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: process.env.PR_COMMENT_BODY
+          })
