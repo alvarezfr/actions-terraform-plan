@@ -52,3 +52,7 @@ runs:
             repo: context.repo.repo,
             body: process.env.PR_COMMENT_BODY
           })
+    - uses: actions/upload-artifact@v2
+      with:
+        name: "PR-${{ github.event.number }}-tfplan"
+        path: tfplan
