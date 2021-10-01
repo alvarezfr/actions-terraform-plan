@@ -3,8 +3,11 @@ description: 'Validate and runs a terraform plan'
 inputs:
   terraform_version:
     description: 'Terraform version to use'
-    required: false
+    required: False
     default: '0.14.x'
+  repo_hash:
+    description: the hash of the repo content to pass the tfplan from pull_request to push trigger
+    required: True
   # Currently is not allowed to use conditional inside composite actions. https://github.com/actions/runner/issues/834
   # write_plan_as_comment:
   #   description: 'enable to write the tfplan to the pr comment'
@@ -17,8 +20,6 @@ runs:
       with:
         terraform_version: ${{ inputs.terraform_version }}
         terraform_wrapper: true
-    - shell: bash
-      run: echo "${{ hashFiles('*') }}"
     - name: terraform init
       env:
         TF_IN_AUTOMATION: 1
@@ -62,7 +63,5 @@ runs:
           })
     - uses: actions/upload-artifact@v2
       with:
-        name: "tfplan-${{ hashFiles('*') }}"
+        name: "tfplan-${{ inputs.repo_hash }}"
         path: tfplan
-    - shell: bash
-      run: echo "${{ hashFiles('*') }}"
