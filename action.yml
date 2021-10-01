@@ -12,6 +12,8 @@ inputs:
   #   default: true
 runs:
   using: composite
+  env:
+    TF_IN_AUTOMATION: 1
   steps:
     - uses: hashicorp/setup-terraform@v1
       with:
@@ -54,5 +56,5 @@ runs:
           })
     - uses: actions/upload-artifact@v2
       with:
-        name: "PR-${{ github.event.number }}-tfplan"
+        name: "tfplan-${{ hashFiles('*') }}"
         path: tfplan
