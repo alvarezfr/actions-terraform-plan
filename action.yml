@@ -18,9 +18,10 @@ runs:
       uses: actions/checkout@v2
       with:
         path: .original_repo
-    - name: "debug: path"
+    # Just to discard possible differences if the commit sha is not the same between
+    - name: clean up .git from original repo
       shell: bash
-      run: ls -lha .original_repo
+      run: rm -rf .original_repo/.git
     - name: get original repo hash
       id: repo-hash
       shell: bash
@@ -72,5 +73,5 @@ runs:
           })
     - uses: actions/upload-artifact@v2
       with:
-        name: "tfplan-${{ steps.repo-hash.hash }}"
+        name: "tfplan-${{ steps.repo-hash.outputs.hash }}"
         path: tfplan
