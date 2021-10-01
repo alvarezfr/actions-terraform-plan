@@ -17,6 +17,8 @@ runs:
       with:
         terraform_version: ${{ inputs.terraform_version }}
         terraform_wrapper: true
+    - shell: bash
+      run: echo "${{ hashFiles('*') }}"
     - name: terraform init
       env:
         TF_IN_AUTOMATION: 1
@@ -62,3 +64,5 @@ runs:
       with:
         name: "tfplan-${{ hashFiles('*') }}"
         path: tfplan
+    - shell: bash
+      run: echo "${{ hashFiles('*') }}"
