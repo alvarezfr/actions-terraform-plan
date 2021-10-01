@@ -18,6 +18,9 @@ runs:
       uses: actions/checkout@v2
       with:
         path: .original_repo
+    - name: "debug: path"
+      shell: bash
+      run: ls -lha .original_repo
     - name: get original repo hash
       id: repo-hash
       shell: bash
